@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, Notification } = require('electron');
 const { autoUpdater } = require('electron-updater');
 
 let mainWindow;
@@ -40,7 +40,18 @@ ipcMain.on('app_version', (event) => {
   event.sender.send('app_version', { version: app.getVersion() });
 });
 
+autoUpdater.on('checking-for-update', () => {
+  new Notification({
+    title: "Checking new updates",
+    body: "Checking for new updates"
+  }).show()
+});
+
 autoUpdater.on('update-available', () => {
+  new Notification({
+    title: "Update available",
+    body: "Update Available"
+  }).show()
   mainWindow.webContents.send('update_available');
 });
 
@@ -50,4 +61,13 @@ autoUpdater.on('update-downloaded', () => {
 
 ipcMain.on('restart_app', () => {
   autoUpdater.quitAndInstall();
+});
+
+autoUpdater.on('error', (message) => {
+  new Notification({
+    title: "Error",
+    body: message
+  }).show()
+  console.error('There was a problem updating the application');
+  console.error(message, '\n');
 });
